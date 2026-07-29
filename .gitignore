@@ -7,3 +7,7 @@ node_modules/
 .env
 .env.*
 !.env.example
+
+# ZK build artifacts (regenerate: npm run compile && npm run setup -w @acta/circuits)
+packages/circuits/build/
+.ptau/

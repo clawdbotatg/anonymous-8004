@@ -18,6 +18,10 @@ import {
   nullifier as sdkNullifier, normalizeClaim, FORMAT,
 } from '@acta/sdk';
 
+import {
+  ISSUER_KEY, MASTER_SECRET, CLAIMS, CONTEXT_HASH, SANCTIONED, buildBaseInput,
+} from './fixture.js';
+
 const require = createRequire(import.meta.url);
 const { newMemEmptyTrie } = require('circomlibjs');
 
@@ -25,83 +29,15 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..', '..');
 const VECTORS = JSON.parse(readFileSync(join(ROOT, 'docs', 'parity-vectors.json'), 'utf8'));
 
-// Same fixed inputs as scripts/gen-parity-vectors.js
-const ISSUER_KEY = 'acta-parity-issuer-key-v1';
-const MASTER_SECRET = 4242424242424242424242n;
-const CLAIMS = { auditScore: 85, jurisdiction: 'CH', capabilities: 5, validUntil: 1893456000 };
-const CONTEXT_HASH = 987654321987654321n;
-const CURRENT_TIME = 1753700000n; // 2025-07-28-ish, < validUntil
-const SESSION_NONCE = 777n;
-const DSL = {
-  all: [
-    { claim: 'auditScore', op: '>=', value: 80 },
-    { not: { claim: 'jurisdiction', op: '==', value: 'IR' } },
-  ],
-};
-const SANCTIONED = ['IR', 'KP', 'SY', 'CU'].map((s) => normalizeClaim(s, FORMAT.STRING));
-
 let calculateWitness; // (input) -> witness bigint[]
 let baseInput;        // known-good full witness input
-let smtF;             // circomlibjs field for conversions
 
 before(async () => {
   const builder = require('../build/ActaPresentation_js/witness_calculator.js');
   const wasm = readFileSync(join(HERE, '..', 'build', 'ActaPresentation_js', 'ActaPresentation.wasm'));
   const wc = await builder(wasm);
   calculateWitness = (input) => wc.calculateWitness(input, true);
-
-  // credential
-  const cred = issueCredential(ISSUER_KEY, MASTER_SECRET, CLAIMS);
-
-  // anchor LeanIMT: our holder among decoys
-  const imt = new LeanIMT((a, b) => poseidon2([a, b]));
-  imt.insert(111n); // decoys
-  imt.insert(222n);
-  imt.insert(cred.holderCommitment);
-  imt.insert(333n);
-  const proof = imt.generateProof(2);
-  const anchorSiblings = [...proof.siblings];
-  while (anchorSiblings.length < 16) anchorSiblings.push(0n);
-
-  // sanctions SMT with exclusion proof for our jurisdiction
-  const tree = await newMemEmptyTrie();
-  smtF = tree.F;
-  for (const k of SANCTIONED) await tree.insert(k, 1n);
-  const ex = await tree.find(cred.claims[1]);
-  assert.equal(ex.found, false);
-  const smtSiblings = ex.siblings.map((s) => smtF.toObject(s));
-  while (smtSiblings.length < 32) smtSiblings.push(0n);
-
-  // policy
-  const program = compileDsl(DSL, SCHEMA_V1);
-
-  baseInput = {
-    masterSecret: MASTER_SECRET,
-    claims: cred.claims,
-    Ax: cred.issuerPublicKey.Ax,
-    Ay: cred.issuerPublicKey.Ay,
-    R8x: cred.signature.R8x,
-    R8y: cred.signature.R8y,
-    S: cred.signature.S,
-    anchorDepth: BigInt(proof.siblings.length),
-    anchorIndex: BigInt(proof.index),
-    anchorSiblings,
-    smtSiblings,
-    smtOldKey: ex.isOld0 ? 0n : smtF.toObject(ex.notFoundKey),
-    smtOldValue: ex.isOld0 ? 0n : smtF.toObject(ex.notFoundValue),
-    smtIsOld0: ex.isOld0 ? 1n : 0n,
-    predClaimRef: program.predicates.map((p) => p.claimRef),
-    predOp: program.predicates.map((p) => p.op),
-    predValue: program.predicates.map((p) => p.compareValue),
-    tokType: program.tokens.map((t) => t.type),
-    tokArg: program.tokens.map((t) => t.arg),
-    anchorRoot: imt.root,
-    sanctionsRoot: smtF.toObject(tree.root),
-    predicateHash: predicateProgramHash(program),
-    contextHash: CONTEXT_HASH,
-    currentTime: CURRENT_TIME,
-    sessionNonce: SESSION_NONCE,
-  };
+  ({ input: baseInput } = await buildBaseInput());
 });
 
 test('honest witness generates; outputs match SDK and parity vectors', async () => {

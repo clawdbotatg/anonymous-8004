@@ -1,0 +1,36 @@
+name: ci
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install circom 2.2.3
+        run: |
+          curl -fL -o /usr/local/bin/circom \
+            https://github.com/iden3/circom/releases/download/v2.2.3/circom-linux-amd64
+          chmod +x /usr/local/bin/circom
+
+      - uses: foundry-rs/foundry-toolchain@v1
+
+      - run: npm ci
+
+      - name: Compile circuit (must compile on every push — pitfall 10)
+        run: CIRCOM=circom bash packages/circuits/scripts/compile.sh
+
+      - name: SDK + circuit witness tests (parity vectors enforced)
+        run: npm test
+
+      - name: Contracts
+        run: |
+          bash packages/contracts/script/setup-libs.sh
+          cd packages/contracts && forge build --quiet && forge test

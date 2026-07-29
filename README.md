@@ -19,10 +19,23 @@ This repo is the staging ground for a **reference implementation**. Phase 1
   hole (issuer commitment is a free private input — anyone can "prove"
   statements about a credential no issuer signed). She herself said: **build
   from the article, not the code.** The audit confirms she's right.
-- **Plan: written** (`09-implementation-plan.md`) — four milestones, ~2 weeks
-  focused: M1 sound circuit + CI, M2 e2e on anvil (demo A), M3 auditor
-  dashboard + web demo on Base Sepolia (demos C+B), M4 reputation loop +
-  writeup. Build fresh, carry her designs.
+- **Plan: written** (`09-implementation-plan.md`) — four milestones. **M1 and
+  M2 are COMPLETE** (2026-07-28):
+  - **M1**: `ActaPresentation.circom` compiles at **45,438 constraints**
+    (budget <50k) — EdDSA-BJJ issuer signature in-circuit, LeanIMT anonymity
+    set, SMT sanctions exclusion, in-circuit `predicateProgramHash` (defined
+    here, absent upstream), postfix predicate VM, context-scoped nullifiers.
+    11 witness tests incl. 8 negatives; SDK↔circuit parity pinned
+    (`docs/parity-vectors.json`). Proving: **1.13s** end-to-end
+    (`docs/latency.md`), gate was <15s.
+  - **M2**: five contracts + generated Groth16 verifier; 11/11 Foundry tests
+    against a **real proof** (~490k gas gate entry, `docs/gas-report.txt`);
+    `make demo` runs the full CLI story on anvil: issue → anchor → policy →
+    prove (~1.2s) → on-chain verify → **replay reverts
+    `NullifierAlreadyUsed`** → tampered credential fails at witness →
+    sanctioned jurisdiction unprovable → unlinkable dual-policy nullifiers.
+  - **Next: M3** — over-asking auditor dashboard (demo C) + three-panel web
+    demo (demo B) + Base Sepolia. Ask the wire-format question before/at M3.
 
 ## Her four focus points (from the 2026-07-28 call) → ACTA components
 

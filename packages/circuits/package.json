@@ -1,0 +1,21 @@
+{
+  "name": "@acta/circuits",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "ACTA presentation circuit (circom) + build/ceremony scripts + witness tests",
+  "scripts": {
+    "compile": "bash scripts/compile.sh",
+    "setup": "bash scripts/dev-ceremony.sh",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "@zk-kit/baby-jubjub": "^1.0.3",
+    "@zk-kit/binary-merkle-root.circom": "^2.0.0",
+    "@zk-kit/eddsa-poseidon": "^1.1.0",
+    "@zk-kit/lean-imt": "^2.2.5",
+    "circomlib": "^2.0.5",
+    "circomlibjs": "^0.1.7",
+    "poseidon-lite": "^0.3.0",
+    "snarkjs": "^0.7.6"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "acta-reference",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Reference implementation of ACTA (Anonymous Credentials for Trustless Agents) — a privacy layer on ERC-8004",
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "npm run test --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present"
+  }
+}

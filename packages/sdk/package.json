@@ -1,0 +1,21 @@
+{
+  "name": "@acta/sdk",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "ACTA SDK: credential issuance, generalized-predicate compiler, program hash, nullifiers",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./encoding": "./src/encoding.js",
+    "./credential": "./src/credential.js",
+    "./constants": "./src/constants.js"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "@zk-kit/baby-jubjub": "^1.0.3",
+    "@zk-kit/eddsa-poseidon": "^1.1.0",
+    "poseidon-lite": "^0.3.0"
+  }
+}

@@ -11,3 +11,4 @@ node_modules/
 # ZK build artifacts (regenerate: npm run compile && npm run setup -w @acta/circuits)
 packages/circuits/build/
 .ptau/
+packages/contracts/lib/

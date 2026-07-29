@@ -6,8 +6,8 @@ ERC-8004**, the trustless-AI-agents standard.
 Post: <https://ethresear.ch/t/anonymous-credentials-for-trustless-agents-acta/24797>
 
 This repo is the staging ground for a **reference implementation**. Phase 1
-(this corpus, complete): research everything. Phase 2 (next): write the build
-plan. Phase 3: build it.
+(research corpus, complete): docs 01–08. Phase 2 (complete): the build plan,
+`09-implementation-plan.md`. Phase 3 (in progress): build it.
 
 ## Status
 
@@ -19,7 +19,10 @@ plan. Phase 3: build it.
   hole (issuer commitment is a free private input — anyone can "prove"
   statements about a credential no issuer signed). She herself said: **build
   from the article, not the code.** The audit confirms she's right.
-- **Plan: not yet written.** Nothing has been built.
+- **Plan: written** (`09-implementation-plan.md`) — four milestones, ~2 weeks
+  focused: M1 sound circuit + CI, M2 e2e on anvil (demo A), M3 auditor
+  dashboard + web demo on Base Sepolia (demos C+B), M4 reputation loop +
+  writeup. Build fresh, carry her designs.
 
 ## Her four focus points (from the 2026-07-28 call) → ACTA components
 

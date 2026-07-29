@@ -1,0 +1,9 @@
+# Vendored read-only clones of the author's repos — re-clone via commands in README.md
+# (kept out of git: nested .git dirs would become accidental submodule gitlinks)
+vendor-acta-poc/
+vendor-ivc-checkpoints/
+
+node_modules/
+.env
+.env.*
+!.env.example

@@ -5,6 +5,9 @@
 ERC-8004**, the trustless-AI-agents standard.
 Post: <https://ethresear.ch/t/anonymous-credentials-for-trustless-agents-acta/24797>
 
+**New here? Read [`TLDR.md`](TLDR.md) first** — what this is, what works, and
+the end-goal UX in four short paragraphs.
+
 This repo is the staging ground for a **reference implementation**. Phase 1
 (research corpus, complete): docs 01–08. Phase 2 (complete): the build plan,
 `09-implementation-plan.md`. Phase 3 (in progress): build it.

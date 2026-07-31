@@ -38,7 +38,7 @@ This repo is the staging ground for a **reference implementation**. Phase 1
     `NullifierAlreadyUsed`** → tampered credential fails at witness →
     sanctioned jurisdiction unprovable → unlinkable dual-policy nullifiers.
   - **Next: M3** — over-asking auditor dashboard (demo C) + three-panel web
-    demo (demo B) + Base Sepolia. Ask the wire-format question before/at M3.
+    demo (demo B) + **Base mainnet** deploy. Ask the wire-format question before/at M3.
 
 ## Her four focus points (from the 2026-07-28 call) → ACTA components
 
@@ -80,7 +80,7 @@ git -C vendor-ivc-checkpoints checkout 616e2d4
    both comparator sides, constrain expiry in-circuit, keep the session nonce
    out of nullifier *derivation* freedom (no unlimited pseudonyms), no
    owner-swappable verifier without timelock, rate-limit reputation writes.
-2. Target chain for the shareable demo: **Base Sepolia** (anvil locally).
+2. Target chain for the shareable demo: **Base mainnet** (anvil locally).
 3. No public RPCs; scan for leaked secrets before any commit.
 
 ## The one question only she can answer

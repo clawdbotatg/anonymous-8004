@@ -12,3 +12,10 @@ node_modules/
 packages/circuits/build/
 .ptau/
 packages/contracts/lib/
+
+# forge artifacts
+packages/contracts/out/
+packages/contracts/cache/
+
+# machine-local deploy config (keystore names, RPC urls) — never commit
+.env.deploy

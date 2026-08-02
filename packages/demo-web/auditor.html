@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ACTA policy auditor — are verifiers over-asking?</title>
+<style>
+  :root { color-scheme: light dark;
+    --bg:#0e1116; --card:#171b22; --ink:#e6e8eb; --dim:#9aa2ad; --line:#2a303a;
+    --good:#39c37f; --warn:#e2b93b; --bad:#ec5f67; --accent:#7aa2f7; }
+  @media (prefers-color-scheme: light) { :root {
+    --bg:#f6f7f9; --card:#ffffff; --ink:#1a1f26; --dim:#5b6470; --line:#e2e6ec; } }
+  * { box-sizing:border-box }
+  body { margin:0; background:var(--bg); color:var(--ink);
+    font:15px/1.5 ui-sans-serif,system-ui,-apple-system,sans-serif; }
+  main { max-width:980px; margin:0 auto; padding:32px 20px 80px; }
+  h1 { font-size:1.5rem; margin:0 0 4px } .sub { color:var(--dim); margin:0 0 24px }
+  .bar { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap }
+  input { flex:1; min-width:260px; background:var(--card); color:var(--ink);
+    border:1px solid var(--line); border-radius:8px; padding:9px 12px; font:inherit }
+  button { background:var(--accent); color:#0b1020; border:0; border-radius:8px;
+    padding:9px 18px; font:inherit; font-weight:600; cursor:pointer }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px;
+    padding:16px 18px; margin-bottom:14px }
+  .row { display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap }
+  .uri { font-weight:650 } .pid { color:var(--dim); font-size:.85rem }
+  .badge { border-radius:999px; padding:3px 12px; font-size:.8rem; font-weight:700; white-space:nowrap }
+  .b-good { background:color-mix(in srgb, var(--good) 18%, transparent); color:var(--good) }
+  .b-warn { background:color-mix(in srgb, var(--warn) 18%, transparent); color:var(--warn) }
+  .b-bad  { background:color-mix(in srgb, var(--bad) 18%, transparent);  color:var(--bad) }
+  .pred { font-family:ui-monospace,Menlo,monospace; font-size:.85rem; color:var(--dim);
+    margin:8px 0 10px; overflow-x:auto }
+  .stats { display:flex; gap:22px; flex-wrap:wrap; font-size:.85rem; color:var(--dim) }
+  .stats b { color:var(--ink); font-weight:650 }
+  .meter { height:6px; background:var(--line); border-radius:3px; margin-top:12px; overflow:hidden }
+  .meter i { display:block; height:100% }
+  details { margin-top:26px; color:var(--dim); font-size:.85rem }
+  details code { font-family:ui-monospace,Menlo,monospace }
+  .err { color:var(--bad); white-space:pre-wrap }
+</style>
+</head>
+<body>
+<main>
+  <h1>ACTA policy auditor</h1>
+  <p class="sub">Every ACTA policy is an on-chain predicate program — an auditable public
+  record of what verifiers demand of agents. This page scores each one:
+  <b>how small does the set of agents that could satisfy it get?</b>
+  A policy that over-asks makes "anonymous" presentation de-anonymizing in practice.</p>
+
+  <div class="bar">
+    <input id="rpc" placeholder="RPC URL (e.g. http://127.0.0.1:8545 or your Alchemy Base URL)">
+    <input id="reg" placeholder="PolicyRegistry address 0x…" style="max-width:340px">
+    <button id="go">Audit</button>
+  </div>
+  <div id="out"><p class="sub">Loading config…</p></div>
+
+  <details>
+    <summary>How the anonymity estimate works (declared model)</summary>
+    <p>The satisfaction rate of each policy's predicate program is measured against a
+    <b>modeled population</b> of 20,000 synthetic agent credentials — auditScore ~ clipped
+    Normal(78, 12); jurisdiction drawn from a 12-country weighted distribution;
+    capabilities uniform over 3 bits; validUntil uniform over the next 2 years — then
+    multiplied by the <b>real anchored population</b> read from the CredentialAnchor tree
+    of the policy's issuer. It is a k-anonymity-style <i>estimate</i>, like a privacy
+    calculator, not a measurement of real agents. The program evaluation itself is exact:
+    the same postfix semantics the ZK circuit enforces (<code>REF/AND/OR/NOT</code> over
+    <code>LE/GE/EQ</code> triples).</p>
+  </details>
+</main>
+
+<script type="module">
+import { createPublicClient, http } from 'https://esm.sh/viem@2.55.10';
+
+const REG_ABI = [
+  { name: 'policyCount', type: 'function', stateMutability: 'view', inputs: [],
+    outputs: [{ type: 'uint256' }] },
+  { name: 'getPolicy', type: 'function', stateMutability: 'view',
+    inputs: [{ type: 'uint256' }],
+    outputs: [{ type: 'tuple', components: [
+      { name: 'predicateHash', type: 'uint256' },
+      { name: 'issuerKeyHash', type: 'uint256' },
+      { name: 'issuer', type: 'address' },
+      { name: 'sanctionsRoot', type: 'uint256' },
+      { name: 'circuitVerifier', type: 'address' },
+      { name: 'validFrom', type: 'uint64' },
+      { name: 'validUntil', type: 'uint64' },
+      { name: 'predClaimRef', type: 'uint256[4]' },
+      { name: 'predOp', type: 'uint256[4]' },
+      { name: 'predValue', type: 'uint256[4]' },
+      { name: 'tokType', type: 'uint256[16]' },
+      { name: 'tokArg', type: 'uint256[16]' },
+      { name: 'registrant', type: 'address' },
+      { name: 'uri', type: 'string' },
+    ] }] },
+];
+const ANCHOR_ABI = [
+  { name: 'treeSize', type: 'function', stateMutability: 'view',
+    inputs: [{ type: 'address' }], outputs: [{ type: 'uint256' }] },
+];
+
+// ---- schema v1 (mirror of @acta/sdk constants) ----
+const SLOT = ['auditScore', 'jurisdiction', 'capabilities', 'validUntil', 'r4', 'r5', 'r6', 'r7'];
+const OPS = ['<=', '>=', '=='];
+const unpackStr = (v) => { let s = ''; let x = v; while (x > 0n) { s = String.fromCharCode(Number(x & 0xffn)) + s; x >>= 8n; } return s || '∅'; };
+const fmtVal = (slot, v) => slot === 1n ? `'${unpackStr(v)}'` : slot === 3n ? new Date(Number(v) * 1000).toISOString().slice(0, 10) : v.toString();
+
+// exact postfix semantics (mirrors the circuit: REF=0 AND=1 OR=2 NOT=3 PAD=4)
+function evalProgram(p, claims) {
+  const res = p.predClaimRef.map((ref, i) => {
+    const v = claims[Number(ref)];
+    const cmp = p.predValue[i];
+    return p.predOp[i] === 0n ? v <= cmp : p.predOp[i] === 1n ? v >= cmp : v === cmp;
+  });
+  const st = [];
+  for (let i = 0; i < 16; i++) {
+    const t = p.tokType[i];
+    if (t === 0n) st.push(res[Number(p.tokArg[i])]);
+    else if (t === 1n || t === 2n) { const b = st.pop(), a = st.pop(); st.push(t === 1n ? a && b : a || b); }
+    else if (t === 3n) st.push(!st.pop());
+  }
+  return st[0];
+}
+function activeTokens(p) { return p.tokType.filter((t) => t !== 4n).length; }
+function describe(p) {
+  const parts = [];
+  for (let i = 0; i < 16; i++) {
+    const t = p.tokType[i];
+    if (t === 4n) break;
+    if (t === 0n) { const k = Number(p.tokArg[i]);
+      parts.push(`${SLOT[Number(p.predClaimRef[k])]} ${OPS[Number(p.predOp[k])]} ${fmtVal(p.predClaimRef[k], p.predValue[k])}`); }
+    else parts.push(['', 'AND', 'OR', 'NOT'][Number(t)]);
+  }
+  return parts.join('  ');
+}
+
+// ---- declared population model ----
+const JURIS = [['US',.25],['GB',.10],['DE',.10],['CH',.08],['SG',.08],['JP',.07],['FR',.07],['CA',.06],['AU',.05],['KR',.05],['BR',.04],['IN',.05]];
+const packStr = (s) => { let v = 0n; for (const ch of s) v = v * 256n + BigInt(ch.charCodeAt(0)); return v; };
+function samplePopulation(n) {
+  const now = Math.floor(Date.now() / 1000);
+  const rnorm = () => { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
+  const pick = () => { let r = Math.random(); for (const [c, w] of JURIS) { r -= w; if (r <= 0) return c; } return 'US'; };
+  const pop = [];
+  for (let i = 0; i < n; i++) {
+    const score = BigInt(Math.max(0, Math.min(100, Math.round(78 + 12 * rnorm()))));
+    pop.push([score, packStr(pick()), BigInt(Math.floor(Math.random() * 8)),
+      BigInt(now + Math.floor(Math.random() * 63072000)), 0n, 0n, 0n, 0n]);
+  }
+  return pop;
+}
+
+const out = document.getElementById('out');
+const $rpc = document.getElementById('rpc');
+const $reg = document.getElementById('reg');
+let anchorAddr = null;
+
+async function audit() {
+  out.innerHTML = '<p class="sub">Reading registry…</p>';
+  try {
+    const client = createPublicClient({ transport: http($rpc.value.trim()) });
+    const reg = $reg.value.trim();
+    const count = await client.readContract({ address: reg, abi: REG_ABI, functionName: 'policyCount' });
+    const pop = samplePopulation(20000);
+    const cards = [];
+    for (let i = 0n; i < count; i++) {
+      const p = await client.readContract({ address: reg, abi: REG_ABI, functionName: 'getPolicy', args: [i] });
+      let anchored = null;
+      if (anchorAddr) {
+        try { anchored = await client.readContract({ address: anchorAddr, abi: ANCHOR_ABI, functionName: 'treeSize', args: [p.issuer] }); } catch {}
+      }
+      const sat = pop.filter((c) => evalProgram(p, c)).length / pop.length;
+      const base = anchored !== null && anchored > 0n ? Number(anchored) : 10000; // fallback: modeled 10k agents
+      const est = Math.max(sat > 0 ? 1 : 0, Math.round(sat * base));
+      const eqCount = (() => { let n = 0; const used = new Set();
+        p.tokType.forEach((t, j) => { if (t === 0n) used.add(Number(p.tokArg[j])); });
+        for (const k of used) if (p.predOp[k] === 2n && p.predClaimRef[k] !== 1n) n++;
+        return n; })();
+      const attrs = new Set(); p.tokType.forEach((t, j) => { if (t === 0n) attrs.add(Number(p.predClaimRef[Number(p.tokArg[j])])); });
+      const cls = est < 10 ? 'bad' : est < 30 ? 'warn' : 'good';
+      const label = est < 10 ? `OVER-ASKING — est. anonymity set ≈ ${est}` : est < 30 ? `narrow — est. set ≈ ${est}` : `est. set ≈ ${est}`;
+      cards.push({ est, html: `
+        <div class="card">
+          <div class="row">
+            <span class="uri">${p.uri || '(no description)'} <span class="pid">policy #${i}</span></span>
+            <span class="badge b-${cls}">${label}</span>
+          </div>
+          <div class="pred">${describe(p)}</div>
+          <div class="stats">
+            <span>satisfaction rate <b>${(sat * 100).toFixed(2)}%</b></span>
+            <span>population <b>${anchored !== null ? anchored + ' anchored' : 'modeled 10k'}</b></span>
+            <span>attributes touched <b>${attrs.size}</b></span>
+            <span>predicates <b>${new Set(p.tokType.map((t, j) => t === 0n ? Number(p.tokArg[j]) : -1).filter((x) => x >= 0)).size}</b></span>
+            <span>exact-match (fingerprint) <b>${eqCount}</b></span>
+          </div>
+          <div class="meter"><i style="width:${Math.min(100, Math.max(2, sat * 100)).toFixed(1)}%;background:var(--${cls})"></i></div>
+        </div>` });
+    }
+    cards.sort((a, b) => a.est - b.est);
+    out.innerHTML = `<p class="sub">${count} policies, ranked worst-first (smallest effective anonymity set):</p>`
+      + cards.map((c) => c.html).join('');
+  } catch (e) {
+    out.innerHTML = `<p class="err">${e.shortMessage ?? e.message}</p>`;
+  }
+}
+document.getElementById('go').onclick = audit;
+
+// auto-config from the seeder's output when served alongside it
+try {
+  const cfg = await (await fetch('deployed.local.json')).json();
+  $rpc.value = cfg.rpc; $reg.value = cfg.policyRegistry; anchorAddr = cfg.credentialAnchor;
+  audit();
+} catch { out.innerHTML = '<p class="sub">Enter an RPC URL and PolicyRegistry address, then Audit. (Run seed-policies.js for a local demo.)</p>'; }
+</script>
+</body>
+</html>

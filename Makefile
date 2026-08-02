@@ -38,3 +38,7 @@ packages/contracts/lib/forge-std/src/Test.sol:
 
 clean:
 	rm -rf $(CIRCUITS)/build packages/contracts/out packages/contracts/cache
+auditor: contracts
+	node packages/demo-web/seed-policies.js
+	@echo "→ open http://127.0.0.1:8791/auditor.html"
+	cd packages/demo-web && python3 -m http.server 8791

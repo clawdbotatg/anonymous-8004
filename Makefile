@@ -12,7 +12,7 @@ demo: setup
 
 test: compile contracts
 	npm test
-	cd packages/contracts && forge test
+	cd app/packages/foundry && forge test
 
 setup: node_modules $(CIRCUITS)/build/acta_dev.zkey contracts
 
@@ -30,14 +30,11 @@ ceremony: $(CIRCUITS)/build/acta_dev.zkey
 $(CIRCUITS)/build/acta_dev.zkey: $(CIRCUITS)/build/ActaPresentation.r1cs
 	cd $(CIRCUITS) && bash scripts/dev-ceremony.sh
 
-contracts: packages/contracts/lib/forge-std/src/Test.sol
-	cd packages/contracts && forge build --quiet
-
-packages/contracts/lib/forge-std/src/Test.sol:
-	bash packages/contracts/script/setup-libs.sh
+contracts:
+	cd app/packages/foundry && forge build
 
 clean:
-	rm -rf $(CIRCUITS)/build packages/contracts/out packages/contracts/cache
+	rm -rf $(CIRCUITS)/build app/packages/foundry/out app/packages/foundry/cache
 auditor: contracts
 	node packages/demo-web/seed-policies.js
 	@echo "→ open http://127.0.0.1:8791/auditor.html"

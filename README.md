@@ -37,8 +37,14 @@ This repo is the staging ground for a **reference implementation**. Phase 1
     prove (~1.2s) → on-chain verify → **replay reverts
     `NullifierAlreadyUsed`** → tampered credential fails at witness →
     sanctioned jurisdiction unprovable → unlinkable dual-policy nullifiers.
-  - **Next: M3** — over-asking auditor dashboard (demo C) + three-panel web
-    demo (demo B) + **Base mainnet** deploy. Ask the wire-format question before/at M3.
+  - **M3 (in progress)**: demo C (over-asking auditor, `make auditor`) is done.
+    Everything now lives in the **Scaffold-ETH 2 app at `app/`** (per
+    ethskills.com): contracts in `app/packages/foundry` (all 11 e2e tests),
+    frontend in `app/packages/nextjs`. **Deploys are `yarn deploy`** (local
+    anvil) / `yarn deploy --network base` (Base mainnet, keystore) — addresses
+    auto-flow into the frontend via `deployedContracts.ts`. Remaining: the
+    three-panel web demo page + the Base deploy. Ask the wire-format question
+    before polish.
 
 ## Her four focus points (from the 2026-07-28 call) → ACTA components
 

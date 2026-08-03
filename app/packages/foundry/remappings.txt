@@ -1,2 +1,3 @@
 @openzeppelin/contracts/=lib/openzeppelin-contracts/contracts
-  
+lean-imt/=lib/lean-imt/
+poseidon-solidity/=lib/poseidon-solidity/

@@ -21,7 +21,7 @@ const { derivePublicKey } = require('@zk-kit/eddsa-poseidon');
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
-const OUT = join(ROOT, 'packages', 'contracts', 'out');
+const OUT = join(ROOT, 'app', 'packages', 'foundry', 'out');
 const RPC = 'http://127.0.0.1:8545';
 
 const art = (n) => {

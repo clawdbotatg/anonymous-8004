@@ -30,7 +30,5 @@ jobs:
       - name: SDK + circuit witness tests (parity vectors enforced)
         run: npm test
 
-      - name: Contracts
-        run: |
-          bash packages/contracts/script/setup-libs.sh
-          cd packages/contracts && forge build --quiet && forge test
+      - name: Contracts (SE-2 foundry package)
+        run: cd app/packages/foundry && forge build && forge test

@@ -32,7 +32,7 @@ const { newMemEmptyTrie } = require('circomlibjs');
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
-const OUT = join(ROOT, 'packages', 'contracts', 'out');
+const OUT = join(ROOT, 'app', 'packages', 'foundry', 'out');
 const BUILD = join(ROOT, 'packages', 'circuits', 'build');
 const RPC = 'http://127.0.0.1:8545';
 

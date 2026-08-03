@@ -4,6 +4,853 @@
  */
 import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 
-const deployedContracts = {} as const;
+const deployedContracts = {
+  31337: {
+    PoseidonT3: {
+      address: "0xcf732126244e3c135dc39d8ce73649706608d927",
+      abi: [
+        {
+          type: "function",
+          name: "hash",
+          inputs: [
+            {
+              name: "",
+              type: "uint256[2]",
+              internalType: "uint256[2]",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "pure",
+        },
+      ],
+      inheritedFunctions: {},
+      deployedOnBlock: 78,
+    },
+    CredentialAnchor: {
+      address: "0xa15bb66138824a1c7167f5e85b957d04dd34e468",
+      abi: [
+        {
+          type: "function",
+          name: "MAX_DEPTH",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "anchor",
+          inputs: [
+            {
+              name: "commitment",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "newRoot",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "currentRoot",
+          inputs: [
+            {
+              name: "issuer",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "isKnownRoot",
+          inputs: [
+            {
+              name: "issuer",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "root",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "treeSize",
+          inputs: [
+            {
+              name: "issuer",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "event",
+          name: "CommitmentAnchored",
+          inputs: [
+            {
+              name: "issuer",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "commitment",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+            {
+              name: "newRoot",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+            {
+              name: "leafIndex",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "error",
+          name: "LeafAlreadyExists",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "LeafCannotBeZero",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "LeafGreaterThanSnarkScalarField",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "TreeFull",
+          inputs: [],
+        },
+      ],
+      inheritedFunctions: {},
+      deployedOnBlock: 79,
+    },
+    PolicyRegistry: {
+      address: "0xb19b36b1456e65e3a6d514d3f715f204bd59f431",
+      abi: [
+        {
+          type: "function",
+          name: "getPolicy",
+          inputs: [
+            {
+              name: "policyId",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "tuple",
+              internalType: "struct PolicyRegistry.Policy",
+              components: [
+                {
+                  name: "predicateHash",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "issuerKeyHash",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "issuer",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "sanctionsRoot",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "circuitVerifier",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "validFrom",
+                  type: "uint64",
+                  internalType: "uint64",
+                },
+                {
+                  name: "validUntil",
+                  type: "uint64",
+                  internalType: "uint64",
+                },
+                {
+                  name: "predClaimRef",
+                  type: "uint256[4]",
+                  internalType: "uint256[4]",
+                },
+                {
+                  name: "predOp",
+                  type: "uint256[4]",
+                  internalType: "uint256[4]",
+                },
+                {
+                  name: "predValue",
+                  type: "uint256[4]",
+                  internalType: "uint256[4]",
+                },
+                {
+                  name: "tokType",
+                  type: "uint256[16]",
+                  internalType: "uint256[16]",
+                },
+                {
+                  name: "tokArg",
+                  type: "uint256[16]",
+                  internalType: "uint256[16]",
+                },
+                {
+                  name: "registrant",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "uri",
+                  type: "string",
+                  internalType: "string",
+                },
+              ],
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "policyCount",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "registerPolicy",
+          inputs: [
+            {
+              name: "p",
+              type: "tuple",
+              internalType: "struct PolicyRegistry.Policy",
+              components: [
+                {
+                  name: "predicateHash",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "issuerKeyHash",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "issuer",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "sanctionsRoot",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "circuitVerifier",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "validFrom",
+                  type: "uint64",
+                  internalType: "uint64",
+                },
+                {
+                  name: "validUntil",
+                  type: "uint64",
+                  internalType: "uint64",
+                },
+                {
+                  name: "predClaimRef",
+                  type: "uint256[4]",
+                  internalType: "uint256[4]",
+                },
+                {
+                  name: "predOp",
+                  type: "uint256[4]",
+                  internalType: "uint256[4]",
+                },
+                {
+                  name: "predValue",
+                  type: "uint256[4]",
+                  internalType: "uint256[4]",
+                },
+                {
+                  name: "tokType",
+                  type: "uint256[16]",
+                  internalType: "uint256[16]",
+                },
+                {
+                  name: "tokArg",
+                  type: "uint256[16]",
+                  internalType: "uint256[16]",
+                },
+                {
+                  name: "registrant",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "uri",
+                  type: "string",
+                  internalType: "string",
+                },
+              ],
+            },
+          ],
+          outputs: [
+            {
+              name: "policyId",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "event",
+          name: "PolicyRegistered",
+          inputs: [
+            {
+              name: "policyId",
+              type: "uint256",
+              indexed: true,
+              internalType: "uint256",
+            },
+            {
+              name: "registrant",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "predicateHash",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+            {
+              name: "issuerKeyHash",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+            {
+              name: "circuitVerifier",
+              type: "address",
+              indexed: false,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "error",
+          name: "InvalidWindow",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "UnknownPolicy",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "ZeroVerifier",
+          inputs: [],
+        },
+      ],
+      inheritedFunctions: {},
+      deployedOnBlock: 80,
+    },
+    NullifierRegistry: {
+      address: "0x8ce361602b935680e8dec218b820ff5056beb7af",
+      abi: [
+        {
+          type: "constructor",
+          inputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "isAcceptedForPolicy",
+          inputs: [
+            {
+              name: "policyId",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "nullifier",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "register",
+          inputs: [
+            {
+              name: "policyId",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "nullifier",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "setVerifier",
+          inputs: [
+            {
+              name: "v",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "verifier",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "event",
+          name: "NullifierRegistered",
+          inputs: [
+            {
+              name: "policyId",
+              type: "uint256",
+              indexed: true,
+              internalType: "uint256",
+            },
+            {
+              name: "nullifier",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "error",
+          name: "NotDeployer",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "NotVerifier",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "NullifierAlreadyUsed",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "VerifierAlreadySet",
+          inputs: [],
+        },
+      ],
+      inheritedFunctions: {},
+      deployedOnBlock: 80,
+    },
+    Groth16CircuitVerifier: {
+      address: "0xe1aa25618fa0c7a1cfdab5d6b456af611873b629",
+      abi: [
+        {
+          type: "constructor",
+          inputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "inner",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "contract Groth16Verifier",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "verify",
+          inputs: [
+            {
+              name: "a",
+              type: "uint256[2]",
+              internalType: "uint256[2]",
+            },
+            {
+              name: "b",
+              type: "uint256[2][2]",
+              internalType: "uint256[2][2]",
+            },
+            {
+              name: "c",
+              type: "uint256[2]",
+              internalType: "uint256[2]",
+            },
+            {
+              name: "publicSignals",
+              type: "uint256[8]",
+              internalType: "uint256[8]",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+      ],
+      inheritedFunctions: {},
+      deployedOnBlock: 79,
+    },
+    PredicateVerifier: {
+      address: "0xe1da8919f262ee86f9be05059c9280142cf23f48",
+      abi: [
+        {
+          type: "constructor",
+          inputs: [
+            {
+              name: "_policies",
+              type: "address",
+              internalType: "contract PolicyRegistry",
+            },
+            {
+              name: "_anchor",
+              type: "address",
+              internalType: "contract CredentialAnchor",
+            },
+            {
+              name: "_nullifiers",
+              type: "address",
+              internalType: "contract NullifierRegistry",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "CONTEXT_DOMAIN",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "MAX_TIME_DRIFT",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "R",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "anchor",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "contract CredentialAnchor",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "contextHash",
+          inputs: [
+            {
+              name: "policyId",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "nullifiers",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "contract NullifierRegistry",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "policies",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "contract PolicyRegistry",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "verifyPresentation",
+          inputs: [
+            {
+              name: "policyId",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "a",
+              type: "uint256[2]",
+              internalType: "uint256[2]",
+            },
+            {
+              name: "b",
+              type: "uint256[2][2]",
+              internalType: "uint256[2][2]",
+            },
+            {
+              name: "c",
+              type: "uint256[2]",
+              internalType: "uint256[2]",
+            },
+            {
+              name: "signals",
+              type: "uint256[8]",
+              internalType: "uint256[8]",
+            },
+          ],
+          outputs: [
+            {
+              name: "nullifier",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "event",
+          name: "PresentationAccepted",
+          inputs: [
+            {
+              name: "policyId",
+              type: "uint256",
+              indexed: true,
+              internalType: "uint256",
+            },
+            {
+              name: "nullifier",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+            {
+              name: "expiryTimestamp",
+              type: "uint64",
+              indexed: false,
+              internalType: "uint64",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "error",
+          name: "ContextMismatch",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "InvalidProof",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "IssuerMismatch",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "PolicyNotActive",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "PredicateHashMismatch",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "SanctionsRootMismatch",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "SignalOutOfField",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "StaleTimestamp",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "UnknownAnchorRoot",
+          inputs: [],
+        },
+      ],
+      inheritedFunctions: {},
+      deployedOnBlock: 79,
+    },
+  },
+} as const;
 
 export default deployedContracts satisfies GenericContractsDeclaration;

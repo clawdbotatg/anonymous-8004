@@ -120,7 +120,7 @@ const fixture = {
   },
 };
 
-const outDir = join(HERE, '..', '..', 'contracts', 'test', 'fixtures');
+const outDir = join(HERE, '..', '..', '..', 'app', 'packages', 'foundry', 'test', 'fixtures');
 mkdirSync(outDir, { recursive: true });
 writeFileSync(join(outDir, 'presentation.json'), JSON.stringify(fixture, null, 2) + '\n');
 console.log('wrote contracts/test/fixtures/presentation.json');

@@ -123,8 +123,13 @@ for (const s of SEEDS) {
 
 const cfg = {
   rpc: RPC,
+  chainId: 31337,
   policyRegistry: policies.address,
   credentialAnchor: anchor.address,
+  nullifierRegistry: nullifiers.address,
+  predicateVerifier: verifier.address,
+  groth16CircuitVerifier: g16.address,
+  poseidonT3: poseidonT3.address,
   issuer: wallet.account.address,
 };
 writeFileSync(join(HERE, 'deployed.local.json'), JSON.stringify(cfg, null, 2) + '\n');

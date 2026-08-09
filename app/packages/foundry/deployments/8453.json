@@ -1,0 +1,8 @@
+{
+  "0x322B94551DA500d07ED9542F77De5448853FCf4B": "PredicateVerifier",
+  "0x4204E8650ac7d92FF9BaCe5736D17b30d0bA5509": "Groth16CircuitVerifier",
+  "0x5AC86B34d8ea36EF8b9Dc647b94f01f20AaFD7a6": "CredentialAnchor",
+  "0x8f0e9c238bd9862F1412b4B6c982507DFA6A1B8A": "PolicyRegistry",
+  "0xe4e756DE7c57EdA24952f3077bF7D0E6C1A99444": "NullifierRegistry",
+  "networkName": "base"
+}

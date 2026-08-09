@@ -37,14 +37,24 @@ This repo is the staging ground for a **reference implementation**. Phase 1
     prove (~1.2s) → on-chain verify → **replay reverts
     `NullifierAlreadyUsed`** → tampered credential fails at witness →
     sanctioned jurisdiction unprovable → unlinkable dual-policy nullifiers.
-  - **M3 (in progress)**: demo C (over-asking auditor, `make auditor`) is done.
-    Everything now lives in the **Scaffold-ETH 2 app at `app/`** (per
-    ethskills.com): contracts in `app/packages/foundry` (all 11 e2e tests),
-    frontend in `app/packages/nextjs`. **Deploys are `yarn deploy`** (local
-    anvil) / `yarn deploy --network base` (Base mainnet, keystore) — addresses
-    auto-flow into the frontend via `deployedContracts.ts`. Remaining: the
-    three-panel web demo page + the Base deploy. Ask the wire-format question
-    before polish.
+  - **M3: COMPLETE** (2026-08-09). Demo C (over-asking auditor,
+    `make auditor`) and **demo B — the three-panel web demo at `/demo`** in
+    the Scaffold-ETH 2 app (`app/`, per ethskills.com): Issuer / Verifier org
+    / Agent panels, a **real Groth16 proof generated in the browser tab in
+    ~1.5s**, on-chain `verifyPresentation`, and a failure lab (replay →
+    `NullifierAlreadyUsed`, forged score → witness fails, sanctioned
+    jurisdiction → unprovable, cross-policy unlinkability). Verified headless
+    end-to-end (12/12 checks incl. real txs on anvil). Run it:
+    `make webdemo-assets`, then `yarn chain` + `yarn deploy` + `yarn start`
+    in `app/`. Contracts live in `app/packages/foundry` (all 11 e2e tests);
+    **deploys are `yarn deploy`**, addresses auto-flow via
+    `deployedContracts.ts`.
+  - **DEPLOYED TO BASE MAINNET** (chain 8453, 2026-08-09), all five contracts
+    verified on Basescan — addresses in
+    `app/packages/foundry/deployments/8453.json`; `PredicateVerifier` at
+    `0x322B94551DA500d07ED9542F77De5448853FCf4B`.
+  - Next: the call with her — agenda ranked in
+    `10-questions-for-zulu0echo.md` (wire-format question first), then M4.
 
 ## Her four focus points (from the 2026-07-28 call) → ACTA components
 

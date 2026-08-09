@@ -19,3 +19,7 @@ packages/contracts/cache/
 
 # machine-local deploy config (keystore names, RPC urls) — never commit
 .env.deploy
+
+# web demo circuit artifacts (regenerate: make webdemo-assets)
+app/packages/nextjs/public/circuits/*.wasm
+app/packages/nextjs/public/circuits/*.zkey

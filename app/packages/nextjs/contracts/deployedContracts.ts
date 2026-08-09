@@ -876,7 +876,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 78,
+      deployedOnBlock: 1,
     },
     CredentialAnchor: {
       address: "0xa15bb66138824a1c7167f5e85b957d04dd34e468",
@@ -1028,7 +1028,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 79,
+      deployedOnBlock: 2,
     },
     PolicyRegistry: {
       address: "0xb19b36b1456e65e3a6d514d3f715f204bd59f431",
@@ -1282,7 +1282,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 80,
+      deployedOnBlock: 3,
     },
     NullifierRegistry: {
       address: "0x8ce361602b935680e8dec218b820ff5056beb7af",
@@ -1401,7 +1401,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 80,
+      deployedOnBlock: 3,
     },
     Groth16CircuitVerifier: {
       address: "0xe1aa25618fa0c7a1cfdab5d6b456af611873b629",
@@ -1460,7 +1460,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 79,
+      deployedOnBlock: 3,
     },
     PredicateVerifier: {
       address: "0xe1da8919f262ee86f9be05059c9280142cf23f48",
@@ -1694,7 +1694,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 79,
+      deployedOnBlock: 3,
     },
   },
 } as const;

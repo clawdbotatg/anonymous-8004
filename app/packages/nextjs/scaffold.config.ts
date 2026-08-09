@@ -43,7 +43,10 @@ const scaffoldConfig = {
   // - "localNetworksOnly": only show when all target networks are local (hardhat/anvil)
   // - "allNetworks": show on any configured target networks
   // - "disabled": completely disable
-  burnerWalletMode: 'localNetworksOnly'
+  // "allNetworks" so the demo stays one-click on anvil even though base is
+  // also a target (localNetworksOnly hides the burner as soon as any live
+  // network is listed). On base you would connect a real wallet anyway.
+  burnerWalletMode: 'allNetworks'
 } as const satisfies ScaffoldConfig;
 
 export default scaffoldConfig;

@@ -5,10 +5,16 @@
 
 CIRCUITS := packages/circuits
 
-.PHONY: demo test setup compile ceremony contracts clean
+.PHONY: demo test setup compile ceremony contracts webdemo-assets clean
 
 demo: setup
 	node packages/demo-cli/demo.js
+
+# circuit artifacts the /demo web page proves with (gitignored in public/)
+webdemo-assets: setup
+	cp $(CIRCUITS)/build/ActaPresentation_js/ActaPresentation.wasm \
+	   $(CIRCUITS)/build/acta_dev.zkey \
+	   app/packages/nextjs/public/circuits/
 
 test: compile contracts
 	npm test

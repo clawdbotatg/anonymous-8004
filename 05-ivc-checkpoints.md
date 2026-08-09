@@ -4,7 +4,7 @@ Corpus doc for the ACTA reference-implementation project. Subject:
 `vendor-ivc-checkpoints/` — a clone of
 [zulu0echo/ivc-checkpoints](https://github.com/zulu0echo/ivc-checkpoints), the ACTA author's
 IVC/folding prototype. All paths below are relative to
-`/Users/clawd/clawd-harness/projects/anonymous-8004/vendor-ivc-checkpoints/` unless absolute.
+`./vendor-ivc-checkpoints/` unless absolute.
 
 ## TLDR
 

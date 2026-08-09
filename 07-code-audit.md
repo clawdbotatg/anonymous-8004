@@ -1,7 +1,7 @@
 # 07 — Code Audit: `vendor-acta-poc` (zulu0echo's ACTA PoC, commit `b75e597`)
 
 **Auditor:** independent forensic pass, run against the clone at
-`/Users/clawd/clawd-harness/projects/anonymous-8004/vendor-acta-poc`
+`./vendor-acta-poc`
 **Subject:** `b75e597 feat(v0.4): JS witness builder + V2 holder/verifier/SDK + ceremony script` (9 commits total)
 **Purpose:** decide what, if anything, to carry into the fresh ACTA reference implementation.
 The author's own guidance — *"build from the article, not my code"* — is, on the evidence below, correct and should be followed.

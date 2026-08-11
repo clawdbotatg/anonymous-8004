@@ -20,6 +20,7 @@ packages/contracts/cache/
 # machine-local deploy config (keystore names, RPC urls) — never commit
 .env.deploy
 
-# web demo circuit artifacts (regenerate: make webdemo-assets)
-app/packages/nextjs/public/circuits/*.wasm
-app/packages/nextjs/public/circuits/*.zkey
+# Web demo circuit artifacts are COMMITTED on purpose (public/circuits/):
+# the Groth16CircuitVerifier deployed on Base was generated from that exact
+# zkey — a regenerated dev ceremony yields proofs the on-chain verifier
+# rejects, and Vercel deploys only what is in git.

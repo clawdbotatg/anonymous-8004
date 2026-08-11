@@ -14,8 +14,8 @@ import { useEffect, useMemo, useState } from "react";
 import type { NextPage } from "next";
 import { encodeAbiParameters, keccak256, toBytes } from "viem";
 import { useAccount, useSwitchChain } from "wagmi";
-import deployedContracts from "~~/contracts/deployedContracts";
 import { RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
+import deployedContracts from "~~/contracts/deployedContracts";
 import {
   useDeployedContractInfo,
   useScaffoldEventHistory,
@@ -23,16 +23,15 @@ import {
   useScaffoldWriteContract,
   useTargetNetwork,
 } from "~~/hooks/scaffold-eth";
-import { getParsedError, notification } from "~~/utils/scaffold-eth";
 import {
   CompiledProgram,
   Credential,
   FIELD_MODULUS,
   SCHEMA_V1,
   compileDsl,
+  nullifier as deriveNullifier,
   evaluateProgram,
   issueCredential,
-  nullifier as deriveNullifier,
   predicateProgramHash,
 } from "~~/utils/acta/actaSdk";
 import {
@@ -42,6 +41,7 @@ import {
   proveInBrowser,
   sanctionsExclusion,
 } from "~~/utils/acta/prove";
+import { getParsedError, notification } from "~~/utils/scaffold-eth";
 
 /** Demo issuer signing key (EdDSA-BJJ). Fixed so the issuerKeyHash is stable. */
 const DEMO_ISSUER_KEY = "acta-web-demo-issuer-key-v1";
@@ -157,6 +157,7 @@ const ActaDemo: NextPage = () => {
       });
       setCred(c);
       setCall(null);
+      setPresented(false);
       notification.success("Credential signed off-chain (EdDSA-BabyJubJub). Nothing touched the chain.");
     } catch (e) {
       notification.error(getParsedError(e));
@@ -190,6 +191,15 @@ const ActaDemo: NextPage = () => {
   const policyIds = useMemo(
     () => (policyEvents ?? []).map(e => e.args.policyId as bigint).sort((a, b) => (a < b ? -1 : 1)),
     [policyEvents],
+  );
+  /** Policies registered from THIS wallet — the only ones whose issuer tree holds our anchors. */
+  const myPolicyIds = useMemo(
+    () =>
+      (policyEvents ?? [])
+        .filter(e => (e.args.registrant as string)?.toLowerCase() === connectedAddress?.toLowerCase())
+        .map(e => e.args.policyId as bigint)
+        .sort((a, b) => (a < b ? -1 : 1)),
+    [policyEvents, connectedAddress],
   );
 
   const registerPolicy = async () => {
@@ -241,6 +251,12 @@ const ActaDemo: NextPage = () => {
   useEffect(() => {
     if (selectedPolicyId === null && policyIds.length > 0) setSelectedPolicyId(policyIds[policyIds.length - 1]);
   }, [policyIds, selectedPolicyId]);
+  // Prefer our own newest policy — someone else's policy pins someone else's tree.
+  const myLatestPolicyId = myPolicyIds.length > 0 ? myPolicyIds[myPolicyIds.length - 1] : undefined;
+  useEffect(() => {
+    if (myLatestPolicyId === undefined) return;
+    setSelectedPolicyId(prev => (prev !== null && myPolicyIds.includes(prev) ? prev : myLatestPolicyId));
+  }, [myLatestPolicyId, myPolicyIds]);
 
   const { data: policy } = useScaffoldReadContract({
     contractName: "PolicyRegistry",
@@ -252,6 +268,7 @@ const ActaDemo: NextPage = () => {
   const [proveMs, setProveMs] = useState<number | null>(null);
   const [call, setCall] = useState<ProofCalldata | null>(null);
   const [presenting, setPresenting] = useState(false);
+  const [presented, setPresented] = useState(false);
   const { writeContractAsync: writeVerifier } = useScaffoldWriteContract({ contractName: "PredicateVerifier" });
 
   const contextHashFor = (policyId: bigint) => {
@@ -314,6 +331,7 @@ const ActaDemo: NextPage = () => {
   const proveHonest = async () => {
     setStage("starting…");
     setCall(null);
+    setPresented(false);
     try {
       const res = await prove();
       if (res) {
@@ -336,6 +354,7 @@ const ActaDemo: NextPage = () => {
         functionName: "verifyPresentation",
         args: [selectedPolicyId, call.a, call.b, call.c, call.signals as any],
       });
+      setPresented(true);
       notification.success("PresentationAccepted — the chain learned ONLY that the policy holds");
     } catch (e) {
       notification.error(getParsedError(e));
@@ -444,6 +463,23 @@ const ActaDemo: NextPage = () => {
 
   const scoreClaim = cred ? Number(cred.claims[0]) : null;
 
+  /**
+   * Journey pointer — at any moment exactly one solid button on the page is
+   * the next step; everything already done (or not yet due) drops to outline.
+   */
+  const step = !cred
+    ? "issue"
+    : !isAnchored
+      ? "anchor"
+      : myPolicyIds.length === 0
+        ? "register"
+        : !call
+          ? "prove"
+          : !presented
+            ? "present"
+            : "lab";
+  const cta = (s: string) => `btn btn-sm ${step === s ? "btn-primary" : "btn-outline"}`;
+
   return (
     <div className="flex flex-col items-center px-4 py-8 gap-6">
       <div className="text-center max-w-3xl">
@@ -492,7 +528,7 @@ const ActaDemo: NextPage = () => {
         <div className="card bg-base-100 shadow-xl border-t-4 border-primary">
           <div className="card-body gap-3">
             <h2 className="card-title">1 · Issuer (the auditor)</h2>
-            <p className="text-xs opacity-60 -mt-2">
+            <p className="text-xs opacity-60 -mt-2 grow-0">
               signs an AgentCapabilityCredential off-chain, anchors only a Poseidon commitment on-chain
             </p>
             <label className="form-control">
@@ -521,7 +557,7 @@ const ActaDemo: NextPage = () => {
                 ))}
               </select>
             </label>
-            <button className="btn btn-primary btn-sm" onClick={issue} disabled={!masterSecret}>
+            <button className={cta("issue")} onClick={issue} disabled={!masterSecret}>
               Issue credential (sign off-chain)
             </button>
             {cred && (
@@ -533,7 +569,7 @@ const ActaDemo: NextPage = () => {
             )}
             {guardTx(
               <button
-                className="btn btn-outline btn-sm"
+                className={cta("anchor")}
                 onClick={() => cred && anchorCommitment(cred.holderCommitment, "holder commitment")}
                 disabled={!cred || anchoring || anchorCooldown || isAnchored}
               >
@@ -556,12 +592,15 @@ const ActaDemo: NextPage = () => {
         <div className="card bg-base-100 shadow-xl border-t-4 border-secondary">
           <div className="card-body gap-3">
             <h2 className="card-title">2 · Verifier org (the client)</h2>
-            <p className="text-xs opacity-60 -mt-2">
+            <p className="text-xs opacity-60 -mt-2 grow-0">
               registers an immutable policy: predicate hash + the full compiled program, on-chain and auditable
             </p>
             <label className="form-control">
               <span className="label-text">
-                require auditScore ≥ … <span className="opacity-50">(AND jurisdiction ∉ {"{"}IR,KP,SY,CU{"}"})</span>
+                require auditScore ≥ …{" "}
+                <span className="opacity-50">
+                  (AND jurisdiction ∉ {"{"}IR,KP,SY,CU{"}"})
+                </span>
               </span>
               <input
                 type="number"
@@ -573,7 +612,7 @@ const ActaDemo: NextPage = () => {
               />
             </label>
             {guardTx(
-              <button className="btn btn-secondary btn-sm" onClick={registerPolicy} disabled={registering || !cred}>
+              <button className={cta("register")} onClick={registerPolicy} disabled={registering || !cred}>
                 {registering ? <span className="loading loading-spinner loading-xs" /> : null}
                 Register policy on-chain
               </button>,
@@ -595,7 +634,7 @@ const ActaDemo: NextPage = () => {
         <div className="card bg-base-100 shadow-xl border-t-4 border-accent">
           <div className="card-body gap-3">
             <h2 className="card-title">3 · Agent (the AI proving itself)</h2>
-            <p className="text-xs opacity-60 -mt-2">
+            <p className="text-xs opacity-60 -mt-2 grow-0">
               reads the policy program back from the chain, proves it in-browser, presents from any wallet
             </p>
             <label className="form-control">
@@ -616,7 +655,7 @@ const ActaDemo: NextPage = () => {
               </select>
             </label>
             <button
-              className="btn btn-accent btn-sm"
+              className={cta("prove")}
               onClick={proveHonest}
               disabled={!cred || !isAnchored || selectedPolicyId === null || !policy || !!stage}
             >
@@ -636,7 +675,7 @@ const ActaDemo: NextPage = () => {
               </div>
             )}
             {guardTx(
-              <button className="btn btn-outline btn-sm" onClick={present} disabled={!call || presenting}>
+              <button className={cta("present")} onClick={present} disabled={!call || presenting}>
                 {presenting ? <span className="loading loading-spinner loading-xs" /> : null}
                 Present on-chain (verifyPresentation)
               </button>,
@@ -650,7 +689,11 @@ const ActaDemo: NextPage = () => {
         <div className="card-body gap-3">
           <h2 className="card-title text-base">Failure lab — watch it refuse</h2>
           <div className="flex flex-wrap gap-2">
-            <button className="btn btn-error btn-outline btn-sm" onClick={labReplay} disabled={!call || !!labBusy}>
+            <button
+              className={`btn btn-error btn-sm ${step === "lab" ? "" : "btn-outline"}`}
+              onClick={labReplay}
+              disabled={!call || !!labBusy}
+            >
               {labBusy === "replay" ? <span className="loading loading-spinner loading-xs" /> : null}
               Replay the same proof
             </button>
@@ -698,7 +741,9 @@ const ActaDemo: NextPage = () => {
                   <tr key={i}>
                     <td className="font-mono">{e.args.policyId?.toString()}</td>
                     <td className="font-mono">{short(e.args.nullifier as bigint)}</td>
-                    <td className="font-mono">{e.args.expiryTimestamp === 0n ? "none" : e.args.expiryTimestamp?.toString()}</td>
+                    <td className="font-mono">
+                      {e.args.expiryTimestamp === 0n ? "none" : e.args.expiryTimestamp?.toString()}
+                    </td>
                   </tr>
                 ))}
                 {(accepted ?? []).length === 0 && (

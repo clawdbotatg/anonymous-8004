@@ -16,9 +16,12 @@ export type ScaffoldConfig = BaseConfig ;
 export const DEFAULT_ALCHEMY_API_KEY = "IZYEU2cWBgnFmgiTAgpWD";
 
 const scaffoldConfig = {
-  // The networks on which your DApp is live
+  // The networks on which your DApp is live.
+  // Base mainnet only: listing chains.foundry here makes the first network the
+  // default, so production tries to reach localhost:8545 ("Cannot connect to
+  // local provider"). For local anvil dev, temporarily switch to
+  // [chains.foundry] (or prepend it) — never ship it that way.
   targetNetworks: [
-    chains.foundry,
     chains.base
   ],
   // The interval at which your front-end polls the RPC servers for new data (it has no effect if you only target the local network (default is 4000))
@@ -43,10 +46,10 @@ const scaffoldConfig = {
   // - "localNetworksOnly": only show when all target networks are local (hardhat/anvil)
   // - "allNetworks": show on any configured target networks
   // - "disabled": completely disable
-  // "allNetworks" so the demo stays one-click on anvil even though base is
-  // also a target (localNetworksOnly hides the burner as soon as any live
-  // network is listed). On base you would connect a real wallet anyway.
-  burnerWalletMode: 'allNetworks'
+  // localNetworksOnly: on Base mainnet users connect a real wallet — offering
+  // an unfunded random burner there is a footgun. When flipping targetNetworks
+  // to [chains.foundry] for local dev this automatically re-enables the burner.
+  burnerWalletMode: 'localNetworksOnly'
 } as const satisfies ScaffoldConfig;
 
 export default scaffoldConfig;

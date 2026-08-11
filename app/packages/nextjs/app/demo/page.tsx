@@ -13,8 +13,9 @@
 import { useEffect, useMemo, useState } from "react";
 import type { NextPage } from "next";
 import { encodeAbiParameters, keccak256, toBytes } from "viem";
-import { useAccount } from "wagmi";
+import { useAccount, useSwitchChain } from "wagmi";
 import deployedContracts from "~~/contracts/deployedContracts";
+import { RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import {
   useDeployedContractInfo,
   useScaffoldEventHistory,
@@ -70,8 +71,26 @@ const Row = ({ k, v }: { k: string; v: React.ReactNode }) => (
 );
 
 const ActaDemo: NextPage = () => {
-  const { address: connectedAddress } = useAccount();
+  const { address: connectedAddress, chain: connectedChain } = useAccount();
+  const { switchChain } = useSwitchChain();
   const { targetNetwork } = useTargetNetwork();
+  const wrongNetwork = !!connectedChain && connectedChain.id !== targetNetwork.id;
+
+  /**
+   * Every on-chain CTA slot renders exactly one of: Connect → Switch network →
+   * the real action button. The header dropdown alone is not enough — clicking
+   * an action on the wrong chain would otherwise die as a toast.
+   */
+  const guardTx = (button: React.ReactNode) => {
+    if (!connectedAddress) return <RainbowKitCustomConnectButton />;
+    if (wrongNetwork)
+      return (
+        <button className="btn btn-warning btn-sm" onClick={() => switchChain({ chainId: targetNetwork.id })}>
+          Switch to {targetNetwork.name}
+        </button>
+      );
+    return button;
+  };
   const chainContracts = (deployedContracts as Record<number, any>)[targetNetwork.id];
   const fromBlock = BigInt(chainContracts?.CredentialAnchor?.deployedOnBlock ?? 0);
 
@@ -95,6 +114,10 @@ const ActaDemo: NextPage = () => {
   const [jurisdiction, setJurisdiction] = useState("CH");
   const [cred, setCred] = useState<Credential | null>(null);
   const [anchoring, setAnchoring] = useState(false);
+  // Covers the confirm→event-cache gap: the receipt lands ~3s before
+  // useScaffoldEventHistory repolls, and in that window isAnchored is still
+  // false — without a cooldown a second click anchors a duplicate leaf.
+  const [anchorCooldown, setAnchorCooldown] = useState(false);
 
   const { writeContractAsync: writeAnchor } = useScaffoldWriteContract({ contractName: "CredentialAnchor" });
   const { data: treeSize } = useScaffoldReadContract({
@@ -144,6 +167,8 @@ const ActaDemo: NextPage = () => {
     setAnchoring(true);
     try {
       await writeAnchor({ functionName: "anchor", args: [leaf] });
+      setAnchorCooldown(true);
+      setTimeout(() => setAnchorCooldown(false), 4000);
       notification.success(`${what} anchored in the issuer's on-chain LeanIMT`);
     } catch (e) {
       notification.error(getParsedError(e));
@@ -430,6 +455,38 @@ const ActaDemo: NextPage = () => {
         </p>
       </div>
 
+      <div className="collapse collapse-arrow bg-base-200 w-full max-w-3xl">
+        <input type="checkbox" />
+        <div className="collapse-title text-sm font-medium py-2 min-h-0">
+          ⚠️ Trust assumptions of this research demo — what you should NOT rely on
+        </div>
+        <div className="collapse-content text-xs opacity-80">
+          <ul className="list-disc pl-4 flex flex-col gap-1">
+            <li>
+              The Groth16 proving key is a <b>single-party dev ceremony</b>, not a production multi-party setup —
+              whoever ran it could in principle retain the toxic waste and forge proofs against the deployed verifier.
+            </li>
+            <li>
+              The demo issuer’s signing key is a <b>fixed public string</b>, so anyone can mint “valid” demo
+              credentials. A real deployment has real issuers with private keys.
+            </li>
+            <li>
+              Your agent’s master secret is stored <b>unencrypted in this browser’s localStorage</b> (clear it to
+              rotate). Fine for a demo, unacceptable for a real agent.
+            </li>
+            <li>
+              One wallet playing issuer, verifier, and agent means an observer of <b>this wallet’s transactions</b> can
+              correlate what the nullifiers alone would not reveal. The unlinkability shown in the failure lab is the
+              real property; the single-wallet demo flow weakens it.
+            </li>
+            <li>
+              The hosted frontend and RPC see your IP and wallet address. For a real privacy posture, run the app
+              locally against your own RPC — the repo is public.
+            </li>
+          </ul>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full max-w-7xl">
         {/* ISSUER */}
         <div className="card bg-base-100 shadow-xl border-t-4 border-primary">
@@ -474,18 +531,20 @@ const ActaDemo: NextPage = () => {
                 <Row k="signed message M" v={short(cred.message)} />
               </div>
             )}
-            <button
-              className="btn btn-outline btn-sm"
-              onClick={() => cred && anchorCommitment(cred.holderCommitment, "holder commitment")}
-              disabled={!cred || anchoring || isAnchored}
-            >
-              {anchoring ? <span className="loading loading-spinner loading-xs" /> : null}
-              {isAnchored ? "✓ commitment anchored" : "Anchor commitment on-chain"}
-            </button>
+            {guardTx(
+              <button
+                className="btn btn-outline btn-sm"
+                onClick={() => cred && anchorCommitment(cred.holderCommitment, "holder commitment")}
+                disabled={!cred || anchoring || anchorCooldown || isAnchored}
+              >
+                {anchoring ? <span className="loading loading-spinner loading-xs" /> : null}
+                {isAnchored ? "✓ commitment anchored" : "Anchor commitment on-chain"}
+              </button>,
+            )}
             <button
               className="btn btn-ghost btn-xs"
               onClick={() => anchorCommitment(randomFieldElement(), "decoy")}
-              disabled={anchoring || !connectedAddress}
+              disabled={anchoring || anchorCooldown || !connectedAddress || wrongNetwork}
             >
               + anchor a decoy (grow the anonymity set)
             </button>
@@ -513,14 +572,12 @@ const ActaDemo: NextPage = () => {
                 onChange={e => setMinScore(Number(e.target.value))}
               />
             </label>
-            <button
-              className="btn btn-secondary btn-sm"
-              onClick={registerPolicy}
-              disabled={registering || !cred || !connectedAddress}
-            >
-              {registering ? <span className="loading loading-spinner loading-xs" /> : null}
-              Register policy on-chain
-            </button>
+            {guardTx(
+              <button className="btn btn-secondary btn-sm" onClick={registerPolicy} disabled={registering || !cred}>
+                {registering ? <span className="loading loading-spinner loading-xs" /> : null}
+                Register policy on-chain
+              </button>,
+            )}
             {!cred && <p className="text-xs opacity-50">issue a credential first — the policy pins its issuer key</p>}
             <div className="bg-base-200 rounded-lg p-3 flex flex-col gap-1">
               <Row k="registered policies" v={policyIds.length.toString()} />
@@ -578,10 +635,12 @@ const ActaDemo: NextPage = () => {
                 )}
               </div>
             )}
-            <button className="btn btn-outline btn-sm" onClick={present} disabled={!call || presenting}>
-              {presenting ? <span className="loading loading-spinner loading-xs" /> : null}
-              Present on-chain (verifyPresentation)
-            </button>
+            {guardTx(
+              <button className="btn btn-outline btn-sm" onClick={present} disabled={!call || presenting}>
+                {presenting ? <span className="loading loading-spinner loading-xs" /> : null}
+                Present on-chain (verifyPresentation)
+              </button>,
+            )}
           </div>
         </div>
       </div>

@@ -17,5 +17,23 @@ export const wagmiConfig = createConfig({
   chains: enabledChains,
   connectors: wagmiConnectors(),
   ssr: true,
-  client: ({ chain }) => { const mainnetFallbackWithDefaultRPC = [http("https://mainnet.rpc.buidlguidl.com")]; let rpcFallbacks = [...(chain.id === mainnet.id ? mainnetFallbackWithDefaultRPC : []), http()]; const rpcOverrideUrl = (scaffoldConfig.rpcOverrides as ScaffoldConfig["rpcOverrides"])?.[chain.id]; if (rpcOverrideUrl) { rpcFallbacks = [http(rpcOverrideUrl), ...rpcFallbacks]; } else { const alchemyHttpUrl = getAlchemyHttpUrl(chain.id); if (alchemyHttpUrl) { const isUsingDefaultKey = scaffoldConfig.alchemyApiKey === DEFAULT_ALCHEMY_API_KEY; rpcFallbacks = isUsingDefaultKey ? [...rpcFallbacks, http(alchemyHttpUrl)] : [http(alchemyHttpUrl), ...rpcFallbacks]; } } return createClient({ chain, transport: fallback(rpcFallbacks), ...(chain.id !== (hardhat as Chain).id ? { pollingInterval: scaffoldConfig.pollingInterval } : {}), }); }
+  client: ({ chain }) => {
+    // Only intentionally configured transports — no bare http() fallback that
+    // silently degrades to rate-limited public RPCs. The chain's default RPC is
+    // used only when nothing else is configured for it (e.g. local anvil).
+    const rpcFallbacks = [];
+    const rpcOverrideUrl = (scaffoldConfig.rpcOverrides as ScaffoldConfig["rpcOverrides"])?.[chain.id];
+    if (rpcOverrideUrl) rpcFallbacks.push(http(rpcOverrideUrl));
+    const alchemyHttpUrl = getAlchemyHttpUrl(chain.id);
+    if (alchemyHttpUrl && scaffoldConfig.alchemyApiKey !== DEFAULT_ALCHEMY_API_KEY) {
+      rpcFallbacks.push(http(alchemyHttpUrl));
+    }
+    if (chain.id === mainnet.id) rpcFallbacks.push(http("https://mainnet.rpc.buidlguidl.com"));
+    if (rpcFallbacks.length === 0) rpcFallbacks.push(http());
+    return createClient({
+      chain,
+      transport: fallback(rpcFallbacks),
+      ...(chain.id !== (hardhat as Chain).id ? { pollingInterval: scaffoldConfig.pollingInterval } : {}),
+    });
+  }
 });

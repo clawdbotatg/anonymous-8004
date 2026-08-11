@@ -8,8 +8,9 @@ import { getMetadata } from "~~/utils/scaffold-eth/getMetadata";
 
 
 export const metadata = getMetadata({
-  title: 'Scaffold-ETH 2 App',
-  description: 'Built with 🏗 Scaffold-ETH 2'
+  title: 'ACTA — Anonymous Credentials for Trustless Agents',
+  description:
+    'ZK privacy layer for ERC-8004: agents prove policy compliance on Base without revealing scores, jurisdiction, or identity. Real Groth16 proofs, generated in your browser.'
 });
 
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {

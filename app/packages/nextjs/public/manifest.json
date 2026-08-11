@@ -1,5 +1,8 @@
 {
-  name: 'Scaffold-ETH 2 DApp',
-  description: 'A DApp built with Scaffold-ETH',
-  iconPath: 'logo.svg'
+  "name": "ACTA — Anonymous Credentials for Trustless Agents",
+  "short_name": "ACTA",
+  "description": "ZK privacy layer for ERC-8004 on Base",
+  "icons": [{ "src": "logo.svg", "sizes": "any", "type": "image/svg+xml" }],
+  "start_url": "/",
+  "display": "standalone"
 }

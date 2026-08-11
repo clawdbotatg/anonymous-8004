@@ -41,7 +41,7 @@ import {
   proveInBrowser,
   sanctionsExclusion,
 } from "~~/utils/acta/prove";
-import { getParsedError, notification } from "~~/utils/scaffold-eth";
+import { getBlockExplorerTxLink, getParsedError, notification } from "~~/utils/scaffold-eth";
 
 /** Demo issuer signing key (EdDSA-BJJ). Fixed so the issuerKeyHash is stable. */
 const DEMO_ISSUER_KEY = "acta-web-demo-issuer-key-v1";
@@ -158,6 +158,7 @@ const ActaDemo: NextPage = () => {
       setCred(c);
       setCall(null);
       setPresented(false);
+      setPresentTxHash(null);
       notification.success("Credential signed off-chain (EdDSA-BabyJubJub). Nothing touched the chain.");
     } catch (e) {
       notification.error(getParsedError(e));
@@ -269,6 +270,7 @@ const ActaDemo: NextPage = () => {
   const [call, setCall] = useState<ProofCalldata | null>(null);
   const [presenting, setPresenting] = useState(false);
   const [presented, setPresented] = useState(false);
+  const [presentTxHash, setPresentTxHash] = useState<string | null>(null);
   const { writeContractAsync: writeVerifier } = useScaffoldWriteContract({ contractName: "PredicateVerifier" });
 
   const contextHashFor = (policyId: bigint) => {
@@ -332,6 +334,7 @@ const ActaDemo: NextPage = () => {
     setStage("starting…");
     setCall(null);
     setPresented(false);
+    setPresentTxHash(null);
     try {
       const res = await prove();
       if (res) {
@@ -350,10 +353,11 @@ const ActaDemo: NextPage = () => {
     if (!call || selectedPolicyId === null) return;
     setPresenting(true);
     try {
-      await writeVerifier({
+      const txHash = await writeVerifier({
         functionName: "verifyPresentation",
         args: [selectedPolicyId, call.a, call.b, call.c, call.signals as any],
       });
+      setPresentTxHash(txHash ?? null);
       setPresented(true);
       notification.success("PresentationAccepted — the chain learned ONLY that the policy holds");
     } catch (e) {
@@ -683,6 +687,53 @@ const ActaDemo: NextPage = () => {
           </div>
         </div>
       </div>
+
+      {/* THE RECEIPT — appears once, when the full loop has actually closed */}
+      {presented && call && (
+        <div className="card bg-base-100 shadow-xl w-full max-w-7xl border-t-4 border-success">
+          <div className="card-body gap-3">
+            <h2 className="card-title text-base">✓ Loop closed. Here is the receipt.</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-base-200 rounded-lg p-3 flex flex-col gap-1">
+                <span className="text-xs font-semibold opacity-70">THE CHAIN NOW KNOWS — public, forever</span>
+                <Row k={`policy #${selectedPolicyId?.toString()}`} v="satisfied" />
+                <Row k="nullifier" v={`${short(call.signals[0])} — spent, replays revert`} />
+                <Row k="submitting wallet" v={short(connectedAddress ?? "")} />
+              </div>
+              <div className="bg-base-200 rounded-lg p-3 flex flex-col gap-1">
+                <span className="text-xs font-semibold opacity-70">THE CHAIN CAN NEVER LEARN</span>
+                <Row k="auditScore" v={scoreClaim ?? "—"} />
+                <Row k="jurisdiction" v={jurisdiction} />
+                <Row k="which anchored commitment is yours" v={`1 of ${(treeSize ?? 1n).toString()}`} />
+                <Row k="master secret" v="never left this tab" />
+              </div>
+            </div>
+            <p className="text-sm grow-0">
+              Don’t take this page’s word for it:{" "}
+              {presentTxHash ? (
+                <a
+                  className="link"
+                  href={getBlockExplorerTxLink(targetNetwork.id, presentTxHash)}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  open the transaction on {targetNetwork.blockExplorers?.default?.name ?? "the block explorer"}
+                </a>
+              ) : (
+                "open the transaction on the block explorer"
+              )}{" "}
+              and read the <span className="font-mono">PresentationAccepted</span> log. It carries exactly three values
+              — policyId, nullifier, expiry. The score and jurisdiction are not encrypted in there somewhere; they were
+              never sent.
+            </p>
+            <p className="text-xs opacity-60 grow-0">
+              Known leak in this demo: the submitting wallet is visible, and here one wallet plays all three roles. A
+              production agent submits through a relayer so even that is hidden.
+            </p>
+            <p className="text-sm grow-0">Now try to break it — the failure lab below attacks this exact proof.</p>
+          </div>
+        </div>
+      )}
 
       {/* FAILURE LAB */}
       <div className="card bg-base-100 shadow-xl w-full max-w-7xl">

@@ -8,6 +8,11 @@ Post: <https://ethresear.ch/t/anonymous-credentials-for-trustless-agents-acta/24
 **New here? Read [`TLDR.md`](TLDR.md) first** — what this is, what works, and
 the end-goal UX in four short paragraphs.
 
+**Taking over the project? Read
+[`11-critical-product-handoff.md`](11-critical-product-handoff.md)** before
+starting M4. It records the verified implementation state, product/privacy
+gaps, threat-model concerns, and the recommended next milestone.
+
 This repo is the staging ground for a **reference implementation**. Phase 1
 (research corpus, complete): docs 01–08. Phase 2 (complete): the build plan,
 `09-implementation-plan.md`. Phase 3 (in progress): build it.

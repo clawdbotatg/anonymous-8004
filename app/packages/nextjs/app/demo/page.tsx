@@ -491,7 +491,7 @@ const ActaDemo: NextPage = () => {
         {/* ISSUER */}
         <div className="card bg-base-100 shadow-xl border-t-4 border-primary">
           <div className="card-body gap-3">
-            <h2 className="card-title">1 · Issuer</h2>
+            <h2 className="card-title">1 · Issuer (the auditor)</h2>
             <p className="text-xs opacity-60 -mt-2">
               signs an AgentCapabilityCredential off-chain, anchors only a Poseidon commitment on-chain
             </p>
@@ -555,7 +555,7 @@ const ActaDemo: NextPage = () => {
         {/* VERIFIER ORG */}
         <div className="card bg-base-100 shadow-xl border-t-4 border-secondary">
           <div className="card-body gap-3">
-            <h2 className="card-title">2 · Verifier org</h2>
+            <h2 className="card-title">2 · Verifier org (the client)</h2>
             <p className="text-xs opacity-60 -mt-2">
               registers an immutable policy: predicate hash + the full compiled program, on-chain and auditable
             </p>
@@ -594,7 +594,7 @@ const ActaDemo: NextPage = () => {
         {/* AGENT */}
         <div className="card bg-base-100 shadow-xl border-t-4 border-accent">
           <div className="card-body gap-3">
-            <h2 className="card-title">3 · Agent</h2>
+            <h2 className="card-title">3 · Agent (the AI proving itself)</h2>
             <p className="text-xs opacity-60 -mt-2">
               reads the policy program back from the chain, proves it in-browser, presents from any wallet
             </p>

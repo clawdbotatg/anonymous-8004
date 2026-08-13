@@ -11,7 +11,10 @@ the end-goal UX in four short paragraphs.
 **Taking over the project? Read
 [`11-critical-product-handoff.md`](11-critical-product-handoff.md)** before
 starting M4. It records the verified implementation state, product/privacy
-gaps, threat-model concerns, and the recommended next milestone.
+gaps, threat-model concerns, and the recommended next milestone. Then
+[`12-demo-session-handoff.md`](12-demo-session-handoff.md) for the `/demo`
+UX layer, the production deploy pipeline (why the circuit artifacts are
+committed), and how to run a live demo without stepping on a spent nullifier.
 
 This repo is the staging ground for a **reference implementation**. Phase 1
 (research corpus, complete): docs 01–08. Phase 2 (complete): the build plan,

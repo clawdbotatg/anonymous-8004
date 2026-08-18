@@ -16,8 +16,7 @@ import { poseidon1, poseidon2, poseidon9, poseidon14 } from "poseidon-lite";
 // ---------------------------------------------------------------- constants
 
 /** BN254 scalar field modulus (the SNARK field). */
-export const FIELD_MODULUS =
-  21888242871839275222246405745257275088548364400416034343698204186575808495617n;
+export const FIELD_MODULUS = 21888242871839275222246405745257275088548364400416034343698204186575808495617n;
 
 export const VERSION = 1n;
 
@@ -133,12 +132,10 @@ export function compileProgram(
     const claimRef = BigInt(p.claimRef);
     const op = BigInt(p.op);
     const compareValue = BigInt(p.compareValue);
-    if (claimRef < 0n || claimRef >= BigInt(params.nClaims))
-      throw new Error(`predicate ${i}: claimRef out of range`);
+    if (claimRef < 0n || claimRef >= BigInt(params.nClaims)) throw new Error(`predicate ${i}: claimRef out of range`);
     if (![0n, 1n, 2n].includes(op)) throw new Error(`predicate ${i}: unknown op ${p.op}`);
     if (compareValue < 0n) throw new Error(`predicate ${i}: negative compareValue`);
-    if (compareValue >= 1n << BigInt(params.valueBits))
-      throw new Error(`predicate ${i}: compareValue >= 2^valueBits`);
+    if (compareValue >= 1n << BigInt(params.valueBits)) throw new Error(`predicate ${i}: compareValue >= 2^valueBits`);
     return { claimRef, op, compareValue };
   });
 
@@ -166,8 +163,7 @@ export function compileProgram(
   });
   if (depth !== 1) throw new Error(`program leaves ${depth} values on the stack (need 1)`);
 
-  while (preds.length < params.maxPredicates)
-    preds.push({ claimRef: 0n, op: BigInt(OP.EQ), compareValue: 0n });
+  while (preds.length < params.maxPredicates) preds.push({ claimRef: 0n, op: BigInt(OP.EQ), compareValue: 0n });
   while (toks.length < params.maxLogicTokens) toks.push({ type: BigInt(TOKEN.PAD), arg: 0n });
 
   return { predicates: preds, tokens: toks };
@@ -274,10 +270,17 @@ export function holderCommitment(masterSecret: bigint): bigint {
   return poseidon1([masterSecret]);
 }
 
+/** The signed message from an already-computed holder commitment — what a
+ * wallet that never sees the master secret uses to verify a received
+ * credential. Same math as credentialMessage. */
+export function credentialMessageFromCommitment(commitment: bigint, claims: bigint[]): bigint {
+  if (claims.length !== CIRCUIT_PARAMS.nClaims) throw new Error("claims length != nClaims");
+  return poseidon9([commitment, ...claims]);
+}
+
 /** The signed message: binds holder + all claim slots. */
 export function credentialMessage(masterSecret: bigint, claims: bigint[]): bigint {
-  if (claims.length !== CIRCUIT_PARAMS.nClaims) throw new Error("claims length != nClaims");
-  return poseidon9([holderCommitment(masterSecret), ...claims]);
+  return credentialMessageFromCommitment(holderCommitment(masterSecret), claims);
 }
 
 export function issuerPubKeyHash(publicKey: [bigint, bigint] | bigint[]): bigint {

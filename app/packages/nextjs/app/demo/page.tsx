@@ -12,7 +12,6 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import type { NextPage } from "next";
-import { encodeAbiParameters, keccak256, toBytes } from "viem";
 import { useAccount, useSwitchChain } from "wagmi";
 import { RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import deployedContracts from "~~/contracts/deployedContracts";
@@ -34,6 +33,7 @@ import {
   issueCredential,
   predicateProgramHash,
 } from "~~/utils/acta/actaSdk";
+import { contextHashFor as deriveContextHash } from "~~/utils/acta/context";
 import {
   ProofCalldata,
   SANCTIONED_JURISDICTIONS,
@@ -41,11 +41,11 @@ import {
   proveInBrowser,
   sanctionsExclusion,
 } from "~~/utils/acta/prove";
+import { credentialToVC, encodeRequestFragment, encodeVCFragment } from "~~/utils/acta/vc";
 import { getBlockExplorerTxLink, getParsedError, notification } from "~~/utils/scaffold-eth";
 
 /** Demo issuer signing key (EdDSA-BJJ). Fixed so the issuerKeyHash is stable. */
 const DEMO_ISSUER_KEY = "acta-web-demo-issuer-key-v1";
-const CONTEXT_DOMAIN = keccak256(toBytes("ACTA_CONTEXT_V1"));
 const JURISDICTIONS = ["CH", "US", "DE", "JP", "SG", "BR", ...SANCTIONED_JURISDICTIONS];
 
 const short = (v: bigint | string) => {
@@ -275,16 +275,7 @@ const ActaDemo: NextPage = () => {
 
   const contextHashFor = (policyId: bigint) => {
     if (!predicateVerifier) throw new Error("PredicateVerifier not loaded");
-    return (
-      BigInt(
-        keccak256(
-          encodeAbiParameters(
-            [{ type: "bytes32" }, { type: "address" }, { type: "uint256" }],
-            [CONTEXT_DOMAIN, predicateVerifier.address, policyId],
-          ),
-        ),
-      ) % FIELD_MODULUS
-    );
+    return deriveContextHash(predicateVerifier.address, policyId);
   };
 
   /** The agent trusts nothing off-chain: program + hash are read back from the registry. */
@@ -569,6 +560,14 @@ const ActaDemo: NextPage = () => {
                 <Row k="holder commitment" v={short(cred.holderCommitment)} />
                 <Row k="issuer key hash" v={short(cred.issuerPubKeyHash)} />
                 <Row k="signed message M" v={short(cred.message)} />
+                <a
+                  className="link text-xs mt-1"
+                  href={`/wallet#import=${encodeVCFragment(credentialToVC(cred))}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  → hand this credential to your wallet (W3C VC, travels in the link, never a server)
+                </a>
               </div>
             )}
             {guardTx(
@@ -628,6 +627,14 @@ const ActaDemo: NextPage = () => {
                 <>
                   <Row k={`policy #${selectedPolicyId} predicateHash`} v={short(policy.predicateHash)} />
                   <Row k="uri" v={policy.uri} />
+                  <a
+                    className="link text-xs mt-1"
+                    href={`/wallet#request=${encodeRequestFragment(selectedPolicyId)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    → request this proof from an agent&apos;s credential wallet
+                  </a>
                 </>
               )}
             </div>

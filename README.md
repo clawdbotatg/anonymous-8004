@@ -15,6 +15,9 @@ gaps, threat-model concerns, and the recommended next milestone. Then
 [`12-demo-session-handoff.md`](12-demo-session-handoff.md) for the `/demo`
 UX layer, the production deploy pipeline (why the circuit artifacts are
 committed), and how to run a live demo without stepping on a spent nullifier.
+Next build: [`13-credential-wallet-spec.md`](13-credential-wallet-spec.md) —
+the credential-wallet mini-app that gives the agent a real place to hold
+credentials and splits the demo's three roles into three actual wallets.
 
 This repo is the staging ground for a **reference implementation**. Phase 1
 (research corpus, complete): docs 01–08. Phase 2 (complete): the build plan,

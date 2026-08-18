@@ -1,6 +1,10 @@
 # The credential wallet — spec (v1)
 
-**Status:** spec, not yet built. **Motivation:** doc 11's two biggest demo
+**Status:** v1 BUILT and live at `/wallet` (2026-08-18). Verified headless on
+production: locked state, import consent with signature verification,
+tampered/garbage fragment rejection, and the real `/demo` → issue → link →
+`/wallet` consent path. Still needing a human with a real wallet to verify:
+unlock (sign → vault), accept & store, and the approve → prove → present flow. **Motivation:** doc 11's two biggest demo
 gaps — actor separation (one wallet currently plays all three roles) and
 credential custody (the credential silently lives in the demo page's
 localStorage; "where does the agent *hold* it?" has no answer). This mini-app

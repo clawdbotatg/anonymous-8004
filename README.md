@@ -20,6 +20,10 @@ committed), and how to run a live demo without stepping on a spent nullifier.
 Next build: [`13-credential-wallet-spec.md`](13-credential-wallet-spec.md) —
 the credential-wallet mini-app that gives the agent a real place to hold
 credentials and splits the demo's three roles into three actual wallets.
+For the research/UX side — how the upstream PoC's demo teaches ACTA (and
+what of its language to adopt), the credential-custody landscape, and the
+use-case story bank — see
+[`15-exploration-handoff.md`](15-exploration-handoff.md).
 
 This repo is the staging ground for a **reference implementation**. Phase 1
 (research corpus, complete): docs 01–08. Phase 2 (complete): the build plan,

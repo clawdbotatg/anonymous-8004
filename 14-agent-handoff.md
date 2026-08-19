@@ -7,7 +7,9 @@ verified on the production deployment.
 
 **Read order for a cold start:** `TLDR.md` → this doc → then, when a task
 touches the relevant area: doc 11 (product/threat-model), doc 12 (`/demo` +
-deploy pipeline + live-demo runbook), doc 13 (wallet spec).
+deploy pipeline + live-demo runbook), doc 13 (wallet spec), doc 15 (the
+research/UX half of this handoff: demo language, custody landscape,
+use-case story bank).
 
 ## 1. What this project is
 
